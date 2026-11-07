@@ -507,7 +507,7 @@ npx --yes npm@^11.15.0 trust github @mgrilec/apm \
 
 ### 9.3 CI
 
-CI on every push and pull request to `main` runs the test suite on Node.js 20 and 22 and validates the publishable package via `npm pack --dry-run`. See [.github/workflows/ci.yml](.github/workflows/ci.yml).
+CI runs on pull requests and pushes to `main`. It runs the test suite on Node.js 20, 22, 24, and 26. It also validates the package with `npm pack --dry-run`. See [.github/workflows/ci.yml](.github/workflows/ci.yml).
 
 ## 10. Support and license
 
