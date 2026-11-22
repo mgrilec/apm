@@ -9,6 +9,10 @@ All notable changes to `@mgrilec/apm` are documented in this file. The format fo
 
 - Updated the pinned Microsoft APM release from `0.26.0` to `0.28.0` and added embedded SHA-256 digests for its supported assets.
 
+### Changed
+
+- Automatically create GitHub releases and publish to npm when the upstream-update PR merges.
+
 ## [0.1.1] - 2026-07-27
 
 ### Added

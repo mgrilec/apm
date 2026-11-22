@@ -1,0 +1,84 @@
+name: Release upstream APM update
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+permissions:
+  contents: read
+
+concurrency:
+  group: automatic-apm-release-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.ref == 'automation/apm-upstream-release' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.metadata.outputs.tag }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+      - id: metadata
+        name: Read package version
+        run: |
+          version="$(node -p 'require("./package.json").version')"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+      - name: Ensure tag points to the merged commit
+        env:
+          TAG: ${{ steps.metadata.outputs.tag }}
+          MERGE_COMMIT_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null; then
+            git fetch origin "refs/tags/$TAG:refs/tags/$TAG"
+            tag_commit="$(git rev-parse "$TAG^{commit}")"
+            if [ "$tag_commit" != "$MERGE_COMMIT_SHA" ]; then
+              echo "Tag $TAG already points to $tag_commit, not $MERGE_COMMIT_SHA" >&2
+              exit 1
+            fi
+          else
+            git tag --annotate "$TAG" --message "Release $TAG" "$MERGE_COMMIT_SHA"
+            git push origin "refs/tags/$TAG"
+          fi
+      - name: Create GitHub Release
+        env:
+          TAG: ${{ steps.metadata.outputs.tag }}
+          MERGE_COMMIT_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          if release_state="$(gh release view "$TAG" --json isDraft,isPrerelease --jq 'if .isDraft then "draft" elif .isPrerelease then "prerelease" else "published" end' 2>/dev/null)"; then
+            if [ "$release_state" != "published" ]; then
+              echo "Release $TAG exists as a $release_state release; refusing to publish it." >&2
+              exit 1
+            fi
+            echo "Release $TAG already exists."
+          else
+            gh release create "$TAG" \
+              --target "$MERGE_COMMIT_SHA" \
+              --title "$TAG" \
+              --generate-notes \
+              --verify-tag
+          fi
+  publish:
+    needs: release
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/publish.yml
+    with:
+      tag: ${{ needs.release.outputs.tag }}
