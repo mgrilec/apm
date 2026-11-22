@@ -1,5 +1,5 @@
 {
-  "version": "0.35.1",
+  "version": "0.37.0",
   "hashes": {
     "0.26.0": {
       "apm-darwin-arm64.tar.gz": "febddd0a8beb4be7b411e708ed746937a14482d5e0935eb776b7f35e320654df",
@@ -495,6 +495,13 @@
       "apm-linux-arm64.tar.gz": "96d65f6ed385d4c4c6093257e9f083bd3e4b51617c228abd787def92c18ab429",
       "apm-linux-x86_64.tar.gz": "e7f06b9c80e26152ab579fe50d7dcd3d76ebbd8eacd44eed424e39880044eb3e",
       "apm-windows-x86_64.zip": "5725ca5c817c5d0b68a3093dbdd2c64c119ea85b5b588d6d4103801680809177"
+    },
+    "0.37.0": {
+      "apm-darwin-arm64.tar.gz": "f745692f886969bd4e8ed54c265214098fd014cf33e8856488528d13f6a6b590",
+      "apm-darwin-x86_64.tar.gz": "e787df8210a8be413c2f373b2cbf56d65f9d5ed5e0a8bd3413ece17ac9489d89",
+      "apm-linux-arm64.tar.gz": "3c488d89c061f31df271bc3cf44b551053da77b97f389cc558d99cbc643f3dde",
+      "apm-linux-x86_64.tar.gz": "04f9509f1d879e8814907b67cbcd33a2f12e4556cdb18a49062a241ce1aff7b9",
+      "apm-windows-x86_64.zip": "422e575a4b60a7532afbfbc655e7e8d85e802dc3651bb9dedd0c131490d3be90"
     }
   }
 }
