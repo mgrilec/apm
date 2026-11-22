@@ -473,7 +473,7 @@ When Microsoft APM publishes a new release (or a patch to the default pinned ver
 3. Bump `package.json` `version`.
 4. Add a `CHANGELOG.md` entry.
 5. Run `npm test` and `npm pack --dry-run`.
-6. Tag and push; the release workflow handles npm publication.
+6. Create and push the matching `v<package-version>` tag, then publish a GitHub Release; the release workflow handles npm publication.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contribution contract (test expectations, security boundaries, review checklist) and [SUPPORT.md](SUPPORT.md) for support boundaries.
 
@@ -490,8 +490,9 @@ For the long-form source-level walk-through (sequence diagrams, lock semantics, 
 
 ### 9.1 What gets published
 
-The published tarball contains only the launcher source, this README, and the MIT license. Releases are published by [the release workflow](.github/workflows/publish.yml) when a GitHub release tag matches `package.json`.
-The [upstream release workflow](.github/workflows/update-apm-release.yml) polls Microsoft APM daily and can also run manually. It opens or updates one pull request only after a newer published stable semantic-version release has all supported archives, checksum sidecars, and GitHub API SHA-256 digests. That pull request updates the pinned release, its embedded digests, the documented default, and the wrapper patch version; review and merge it before creating the npm release.
+The published tarball contains only the launcher source, this README, and the MIT license. The [npm workflow](.github/workflows/publish.yml) publishes a matching package when a GitHub Release is published.
+
+The [upstream release workflow](.github/workflows/update-apm-release.yml) polls Microsoft APM daily and can also run manually. It opens or updates one pull request only after a newer published stable semantic-version release has all supported archives, checksum sidecars, and GitHub API SHA-256 digests. That pull request updates the pinned release, its embedded digests, the documented default, and the wrapper patch version. Review and merge it. Only a merge from `automation/apm-upstream-release` to `main` creates an automatic release. The [release workflow](.github/workflows/release-upstream-apm.yml) tags the merge commit as `v<package-version>` and publishes a GitHub Release. It then calls the npm workflow as a reusable workflow. This call is required because GitHub does not start workflows for releases created with `GITHUB_TOKEN`. Other merges do not trigger this release path.
 
 
 ### 9.2 Trusted publishing
@@ -504,6 +505,8 @@ npx --yes npm@^11.15.0 trust github @mgrilec/apm \
   --file publish.yml \
   --allow-publish
 ```
+
+Register `release-upstream-apm.yml` as a second trusted publisher with the same command and `--file release-upstream-apm.yml`. npm checks the calling workflow for reusable workflows.
 
 ### 9.3 CI
 
